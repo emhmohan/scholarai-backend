@@ -5,14 +5,17 @@ import User from '../models/User.js';
 import { sendEmail } from './emailService.js';
 import logger from './logger.js';
 
-// Called after dotenv.config() runs in server.js
+const CALLBACK_BASE = process.env.NODE_ENV === 'production'
+  ? process.env.BACKEND_URL || 'https://scholarai-api.onrender.com'
+  : 'http://localhost:5000';
+
 export const initPassport = () => {
 
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.use(new GoogleStrategy({
       clientID:     process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL:  'http://localhost:5000/api/auth/google/callback',
+      callbackURL:  `${CALLBACK_BASE}/api/auth/google/callback`,
     }, async (accessToken, refreshToken, profile, done) => {
       try {
         let user  = await User.findOne({ email: profile.emails[0].value });
@@ -46,7 +49,7 @@ export const initPassport = () => {
     passport.use(new GitHubStrategy({
       clientID:     process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL:  'http://localhost:5000/api/auth/github/callback',
+      callbackURL:  `${CALLBACK_BASE}/api/auth/github/callback`,
       scope:        ['user:email'],
     }, async (accessToken, refreshToken, profile, done) => {
       try {
